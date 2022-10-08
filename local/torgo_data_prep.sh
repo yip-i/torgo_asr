@@ -14,7 +14,7 @@ echo ""
 echo "=== Starting initial Torgo data preparation ..."
 echo ""
 
-. utils/parse_options.sh
+./parse_options.sh
 
 # Utterances to discard
 bad_utts=conf/bad_utts
