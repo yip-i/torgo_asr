@@ -122,224 +122,224 @@ if [ $stage -le 3 ]; then
     done
 fi
 
-# Train monophone models.
-if [ $stage -le 4 ] && [ "$train" = true ] ; then
-    for spk in $speakers; do
-        rm -rdf exp/mono/$spk
-        mkdir -p exp/mono/$spk
-        nj=$(cat data/$spk/train/spk2utt | wc -l)
-        steps/train_mono.sh --nj $nj --cmd "$train_cmd" \
-                            data/$spk/train data/$spk/lang exp/mono/$spk \
-                            >& exp/mono/$spk/train.log &
-    done
-    wait;
-fi
+# # Train monophone models.
+# if [ $stage -le 4 ] && [ "$train" = true ] ; then
+#     for spk in $speakers; do
+#         rm -rdf exp/mono/$spk
+#         mkdir -p exp/mono/$spk
+#         nj=$(cat data/$spk/train/spk2utt | wc -l)
+#         steps/train_mono.sh --nj $nj --cmd "$train_cmd" \
+#                             data/$spk/train data/$spk/lang exp/mono/$spk \
+#                             >& exp/mono/$spk/train.log &
+#     done
+#     wait;
+# fi
 
-# Monophone decoding.
-if [ $stage -le 5 ]; then
-    for spk in $speakers; do
-        (
-        for x in $tests; do     
-            utils/mkgraph.sh data/$spk/lang_$x exp/mono/$spk \
-                             exp/mono/$spk/graph_$x >& exp/mono/$spk/mkgraph.log
-            steps/decode.sh --nj $nj_decode --cmd "$decode_cmd" \
-                            exp/mono/$spk/graph_$x data/$spk/$x \
-                            exp/mono/$spk/decode_$x >& exp/mono/$spk/decode.log
-        done
-        ) &
-    done
-    wait;
-fi
+# # Monophone decoding.
+# if [ $stage -le 5 ]; then
+#     for spk in $speakers; do
+#         (
+#         for x in $tests; do     
+#             utils/mkgraph.sh data/$spk/lang_$x exp/mono/$spk \
+#                              exp/mono/$spk/graph_$x >& exp/mono/$spk/mkgraph.log
+#             steps/decode.sh --nj $nj_decode --cmd "$decode_cmd" \
+#                             exp/mono/$spk/graph_$x data/$spk/$x \
+#                             exp/mono/$spk/decode_$x >& exp/mono/$spk/decode.log
+#         done
+#         ) &
+#     done
+#     wait;
+# fi
 
-# Train tri1 (first triphone pass).
-if [ $stage -le 6 ] && [ "$train" = true ] ; then
-    for spk in $speakers; do
-        (
-        rm -rdf exp/mono_ali/$spk exp/tri1/$spk
-        mkdir -p exp/mono_ali/$spk exp/tri1/$spk
-        nj=$(cat data/$spk/train/spk2utt | wc -l)
-        steps/align_si.sh --nj $nj --cmd "$train_cmd" \
-                          data/$spk/train data/$spk/lang exp/mono/$spk \
-                          exp/mono_ali/$spk >& exp/mono_ali/$spk/align.log
+# # Train tri1 (first triphone pass).
+# if [ $stage -le 6 ] && [ "$train" = true ] ; then
+#     for spk in $speakers; do
+#         (
+#         rm -rdf exp/mono_ali/$spk exp/tri1/$spk
+#         mkdir -p exp/mono_ali/$spk exp/tri1/$spk
+#         nj=$(cat data/$spk/train/spk2utt | wc -l)
+#         steps/align_si.sh --nj $nj --cmd "$train_cmd" \
+#                           data/$spk/train data/$spk/lang exp/mono/$spk \
+#                           exp/mono_ali/$spk >& exp/mono_ali/$spk/align.log
 
-        steps/train_deltas.sh --cmd "$train_cmd" $leaves $gaussians \
-                              data/$spk/train data/$spk/lang exp/mono_ali/$spk \
-                              exp/tri1/$spk >& exp/tri1/$spk/train.log
-        ) &
-    done
-    wait;
-fi
+#         steps/train_deltas.sh --cmd "$train_cmd" $leaves $gaussians \
+#                               data/$spk/train data/$spk/lang exp/mono_ali/$spk \
+#                               exp/tri1/$spk >& exp/tri1/$spk/train.log
+#         ) &
+#     done
+#     wait;
+# fi
 
-# Decode tri1.
-if [ $stage -le 7 ]; then
-    for spk in $speakers; do
-        (
-        for x in $tests; do
-            utils/mkgraph.sh data/$spk/lang_$x exp/tri1/$spk \
-                             exp/tri1/$spk/graph_$x >& exp/tri1/$spk/mkgraph.log
-            steps/decode.sh --nj $nj_decode --cmd "$decode_cmd" \
-                            exp/tri1/$spk/graph_$x data/$spk/$x \
-                            exp/tri1/$spk/decode_$x >& exp/tri1/$spk/decode.log
-        done
-        ) &
-    done
-    wait;
-fi
+# # Decode tri1.
+# if [ $stage -le 7 ]; then
+#     for spk in $speakers; do
+#         (
+#         for x in $tests; do
+#             utils/mkgraph.sh data/$spk/lang_$x exp/tri1/$spk \
+#                              exp/tri1/$spk/graph_$x >& exp/tri1/$spk/mkgraph.log
+#             steps/decode.sh --nj $nj_decode --cmd "$decode_cmd" \
+#                             exp/tri1/$spk/graph_$x data/$spk/$x \
+#                             exp/tri1/$spk/decode_$x >& exp/tri1/$spk/decode.log
+#         done
+#         ) &
+#     done
+#     wait;
+# fi
 
-# Train tri2 (LDA+MLLT).
-if [ $stage -le 8 ] && [ "$train" = true ] ; then
-    for spk in $speakers; do
-        (
-        rm -rdf exp/tri1_ali/$spk exp/tri2/$spk
-        mkdir -p exp/tri1_ali/$spk exp/tri2/$spk
-        nj=$(cat data/$spk/train/spk2utt | wc -l)
-        steps/align_si.sh --nj $nj --cmd "$train_cmd" --use-graphs true \
-                          data/$spk/train data/$spk/lang exp/tri1/$spk \
-                          exp/tri1_ali/$spk >& exp/tri1_ali/$spk/align.log
+# # Train tri2 (LDA+MLLT).
+# if [ $stage -le 8 ] && [ "$train" = true ] ; then
+#     for spk in $speakers; do
+#         (
+#         rm -rdf exp/tri1_ali/$spk exp/tri2/$spk
+#         mkdir -p exp/tri1_ali/$spk exp/tri2/$spk
+#         nj=$(cat data/$spk/train/spk2utt | wc -l)
+#         steps/align_si.sh --nj $nj --cmd "$train_cmd" --use-graphs true \
+#                           data/$spk/train data/$spk/lang exp/tri1/$spk \
+#                           exp/tri1_ali/$spk >& exp/tri1_ali/$spk/align.log
 
-        steps/train_lda_mllt.sh --cmd "$train_cmd" $leaves $gaussians \
-                                data/$spk/train data/$spk/lang \
-                                exp/tri1_ali/$spk exp/tri2/$spk >& exp/tri2/$spk/train.log
-        ) &
-    done
-    wait;
-fi
+#         steps/train_lda_mllt.sh --cmd "$train_cmd" $leaves $gaussians \
+#                                 data/$spk/train data/$spk/lang \
+#                                 exp/tri1_ali/$spk exp/tri2/$spk >& exp/tri2/$spk/train.log
+#         ) &
+#     done
+#     wait;
+# fi
 
-# Decode tri2.
-if [ $stage -le 9 ]; then
-    for spk in $speakers; do
-        (
-        for x in $tests; do
-            utils/mkgraph.sh data/$spk/lang_$x exp/tri2/$spk \
-                             exp/tri2/$spk/graph_$x >& exp/tri2/$spk/mkgraph.log
-            steps/decode.sh --nj $nj_decode --cmd "$decode_cmd" \
-                            exp/tri2/$spk/graph_$x data/$spk/$x \
-                            exp/tri2/$spk/decode_$x >& exp/tri2/$spk/decode.log
-        done
-        ) &
-    done
-    wait;
-fi
+# # Decode tri2.
+# if [ $stage -le 9 ]; then
+#     for spk in $speakers; do
+#         (
+#         for x in $tests; do
+#             utils/mkgraph.sh data/$spk/lang_$x exp/tri2/$spk \
+#                              exp/tri2/$spk/graph_$x >& exp/tri2/$spk/mkgraph.log
+#             steps/decode.sh --nj $nj_decode --cmd "$decode_cmd" \
+#                             exp/tri2/$spk/graph_$x data/$spk/$x \
+#                             exp/tri2/$spk/decode_$x >& exp/tri2/$spk/decode.log
+#         done
+#         ) &
+#     done
+#     wait;
+# fi
 
-# Train tri3 (LDA+MLLT+SAT).
-if [ $stage -le 10 ] && [ "$train" = true ] ; then
-    for spk in $speakers; do
-        (
-        rm -rdf exp/tri2_ali/$spk exp/tri3/$spk
-        mkdir -p exp/tri2_ali/$spk exp/tri3/$spk
-        nj=$(cat data/$spk/train/spk2utt | wc -l)
-        steps/align_si.sh --nj $nj --cmd "$train_cmd" --use-graphs true \
-                          data/$spk/train data/$spk/lang exp/tri2/$spk \
-                          exp/tri2_ali/$spk >& exp/tri2_ali/$spk/align.log
-        steps/train_sat.sh --cmd "$train_cmd" $leaves $gaussians data/$spk/train data/$spk/lang \
-                           exp/tri2_ali/$spk exp/tri3/$spk >& exp/tri3/$spk/train.log
-        ) &
-    done
-    wait;
-fi
+# # Train tri3 (LDA+MLLT+SAT).
+# if [ $stage -le 10 ] && [ "$train" = true ] ; then
+#     for spk in $speakers; do
+#         (
+#         rm -rdf exp/tri2_ali/$spk exp/tri3/$spk
+#         mkdir -p exp/tri2_ali/$spk exp/tri3/$spk
+#         nj=$(cat data/$spk/train/spk2utt | wc -l)
+#         steps/align_si.sh --nj $nj --cmd "$train_cmd" --use-graphs true \
+#                           data/$spk/train data/$spk/lang exp/tri2/$spk \
+#                           exp/tri2_ali/$spk >& exp/tri2_ali/$spk/align.log
+#         steps/train_sat.sh --cmd "$train_cmd" $leaves $gaussians data/$spk/train data/$spk/lang \
+#                            exp/tri2_ali/$spk exp/tri3/$spk >& exp/tri3/$spk/train.log
+#         ) &
+#     done
+#     wait;
+# fi
 
-# Decode tri3.
-if [ $stage -le 11 ]; then
-    for spk in $speakers; do
-        (
-        for x in $tests; do
-            utils/mkgraph.sh data/$spk/lang_$x exp/tri3/$spk \
-                             exp/tri3/$spk/graph_$x >& exp/tri3/$spk/mkgraph.log
-            steps/decode_fmllr.sh --nj $nj_decode --cmd "$decode_cmd" \
-                                  exp/tri3/$spk/graph_$x data/$spk/$x \
-                                  exp/tri3/$spk/decode_$x >& exp/tri3/$spk/decode.log
-        done
-        ) &
-    done
-    wait;
-fi
+# # Decode tri3.
+# if [ $stage -le 11 ]; then
+#     for spk in $speakers; do
+#         (
+#         for x in $tests; do
+#             utils/mkgraph.sh data/$spk/lang_$x exp/tri3/$spk \
+#                              exp/tri3/$spk/graph_$x >& exp/tri3/$spk/mkgraph.log
+#             steps/decode_fmllr.sh --nj $nj_decode --cmd "$decode_cmd" \
+#                                   exp/tri3/$spk/graph_$x data/$spk/$x \
+#                                   exp/tri3/$spk/decode_$x >& exp/tri3/$spk/decode.log
+#         done
+#         ) &
+#     done
+#     wait;
+# fi
 
-# Train SGMM.
-if [ $stage -le 12 ] && [ "$train" = true ] ; then
-    for spk in $speakers; do
-        (
-        rm -rdf exp/tri3_ali/$spk exp/ubm/$spk exp/sgmm/$spk
-        mkdir -p exp/tri3_ali/$spk exp/ubm/$spk exp/sgmm/$spk
-        nj=$(cat data/$spk/train/spk2utt | wc -l)
-        steps/align_fmllr.sh --nj $nj --cmd "$train_cmd" --use-graphs true \
-                             data/$spk/train data/$spk/lang exp/tri3/$spk \
-                             exp/tri3_ali/$spk >& exp/tri3_ali/$spk/align.log
-        steps/train_ubm.sh --silence-weight 0.5 --cmd "$train_cmd" 400 \
-                           data/$spk/train data/$spk/lang exp/tri3_ali/$spk \
-                           exp/ubm/$spk >& exp/ubm/$spk/train.log
-        sgmm_leaves=8000
-        sgmm_substates=19000
-        steps/train_sgmm2.sh --cmd "$train_cmd" $sgmm_leaves $sgmm_substates \
-                             data/$spk/train data/$spk/lang exp/tri3_ali/$spk \
-                             exp/ubm/$spk/final.ubm exp/sgmm/$spk \
-                             >& exp/sgmm/$spk/train.log
-        ) &
-    done
-    wait;
-fi
+# # Train SGMM.
+# if [ $stage -le 12 ] && [ "$train" = true ] ; then
+#     for spk in $speakers; do
+#         (
+#         rm -rdf exp/tri3_ali/$spk exp/ubm/$spk exp/sgmm/$spk
+#         mkdir -p exp/tri3_ali/$spk exp/ubm/$spk exp/sgmm/$spk
+#         nj=$(cat data/$spk/train/spk2utt | wc -l)
+#         steps/align_fmllr.sh --nj $nj --cmd "$train_cmd" --use-graphs true \
+#                              data/$spk/train data/$spk/lang exp/tri3/$spk \
+#                              exp/tri3_ali/$spk >& exp/tri3_ali/$spk/align.log
+#         steps/train_ubm.sh --silence-weight 0.5 --cmd "$train_cmd" 400 \
+#                            data/$spk/train data/$spk/lang exp/tri3_ali/$spk \
+#                            exp/ubm/$spk >& exp/ubm/$spk/train.log
+#         sgmm_leaves=8000
+#         sgmm_substates=19000
+#         steps/train_sgmm2.sh --cmd "$train_cmd" $sgmm_leaves $sgmm_substates \
+#                              data/$spk/train data/$spk/lang exp/tri3_ali/$spk \
+#                              exp/ubm/$spk/final.ubm exp/sgmm/$spk \
+#                              >& exp/sgmm/$spk/train.log
+#         ) &
+#     done
+#     wait;
+# fi
 
-# Decode SGMM.
-if [ $stage -le 13 ]; then
-    for spk in $speakers; do
-        (
-        for x in $tests; do
-            utils/mkgraph.sh data/$spk/lang_$x exp/sgmm/$spk \
-                             exp/sgmm/$spk/graph_$x >& exp/sgmm/$spk/mkgraph.log
-            steps/decode_sgmm2.sh --use-fmllr true --nj $nj_decode \
-                                  --cmd "$decode_cmd" \
-                                  --transform-dir exp/tri3/$spk/decode_$x \
-                                  exp/sgmm/$spk/graph_$x data/$spk/$x \
-                                  exp/sgmm/$spk/decode_$x \
-                                  >& exp/sgmm/$spk/decode.log
-        done
-        ) &
-    done
-    wait;
-fi
+# # Decode SGMM.
+# if [ $stage -le 13 ]; then
+#     for spk in $speakers; do
+#         (
+#         for x in $tests; do
+#             utils/mkgraph.sh data/$spk/lang_$x exp/sgmm/$spk \
+#                              exp/sgmm/$spk/graph_$x >& exp/sgmm/$spk/mkgraph.log
+#             steps/decode_sgmm2.sh --use-fmllr true --nj $nj_decode \
+#                                   --cmd "$decode_cmd" \
+#                                   --transform-dir exp/tri3/$spk/decode_$x \
+#                                   exp/sgmm/$spk/graph_$x data/$spk/$x \
+#                                   exp/sgmm/$spk/decode_$x \
+#                                   >& exp/sgmm/$spk/decode.log
+#         done
+#         ) &
+#     done
+#     wait;
+# fi
 
-# Train SGMM+MMI.
-if [ $stage -le 14 ] ; then
-    for spk in $speakers; do
-        (
-        rm -rdf exp/sgmm_ali/$spk exp/sgmm_denlats/$spk exp/sgmm_mmi_b0.1/$spk
-        mkdir -p exp/sgmm_ali/$spk exp/sgmm_denlats/$spk exp/sgmm_mmi_b0.1/$spk
-        nj=$(cat data/$spk/train/spk2utt | wc -l)
-        steps/align_sgmm2.sh --nj $nj --cmd "$train_cmd" \
-                             --transform-dir exp/tri3_ali/$spk --use-graphs true \
-                             --use-gselect true data/$spk/train \
-                             data/$spk/lang exp/sgmm/$spk exp/sgmm_ali/$spk \
-                             >& exp/sgmm_ali/$spk/align.log
-        if [ "$train" = true ]; then
-            steps/make_denlats_sgmm2.sh --nj $nj --sub-split 1 --cmd "$train_cmd" \
-                                        --transform-dir exp/tri3_ali/$spk \
-                                        data/$spk/train data/$spk/lang \
-                                        exp/sgmm_ali/$spk exp/sgmm_denlats/$spk \
-                                        >& exp/sgmm_denlats/$spk/make.log
-            steps/train_mmi_sgmm2.sh --cmd "$train_cmd" \
-                                     --transform-dir exp/tri3_ali/$spk --boost 0.1 \
-                                     data/$spk/train data/$spk/lang exp/sgmm_ali/$spk \
-                                     exp/sgmm_denlats/$spk exp/sgmm_mmi_b0.1/$spk \
-                                     >& exp/sgmm_mmi_b0.1/$spk/train.log
-        fi
-        ) &
-    done
-    wait;
-fi
+# # Train SGMM+MMI.
+# if [ $stage -le 14 ] ; then
+#     for spk in $speakers; do
+#         (
+#         rm -rdf exp/sgmm_ali/$spk exp/sgmm_denlats/$spk exp/sgmm_mmi_b0.1/$spk
+#         mkdir -p exp/sgmm_ali/$spk exp/sgmm_denlats/$spk exp/sgmm_mmi_b0.1/$spk
+#         nj=$(cat data/$spk/train/spk2utt | wc -l)
+#         steps/align_sgmm2.sh --nj $nj --cmd "$train_cmd" \
+#                              --transform-dir exp/tri3_ali/$spk --use-graphs true \
+#                              --use-gselect true data/$spk/train \
+#                              data/$spk/lang exp/sgmm/$spk exp/sgmm_ali/$spk \
+#                              >& exp/sgmm_ali/$spk/align.log
+#         if [ "$train" = true ]; then
+#             steps/make_denlats_sgmm2.sh --nj $nj --sub-split 1 --cmd "$train_cmd" \
+#                                         --transform-dir exp/tri3_ali/$spk \
+#                                         data/$spk/train data/$spk/lang \
+#                                         exp/sgmm_ali/$spk exp/sgmm_denlats/$spk \
+#                                         >& exp/sgmm_denlats/$spk/make.log
+#             steps/train_mmi_sgmm2.sh --cmd "$train_cmd" \
+#                                      --transform-dir exp/tri3_ali/$spk --boost 0.1 \
+#                                      data/$spk/train data/$spk/lang exp/sgmm_ali/$spk \
+#                                      exp/sgmm_denlats/$spk exp/sgmm_mmi_b0.1/$spk \
+#                                      >& exp/sgmm_mmi_b0.1/$spk/train.log
+#         fi
+#         ) &
+#     done
+#     wait;
+# fi
 
-# Decode SGMM+MMI.
-if [ $stage -le 15 ]; then
-    for spk in $speakers; do
-        (
-        for x in $tests; do
-            for iter in 1 2 3 4; do
-                steps/decode_sgmm2_rescore.sh \
-                    --cmd "$decode_cmd" --iter $iter \
-                    --transform-dir exp/tri3/$spk/decode_$x \
-                    data/$spk/lang_$x data/$spk/$x exp/sgmm/$spk/decode_$x \
-                    exp/sgmm_mmi_b0.1/$spk/decode_${x}_it$iter >& exp/sgmm_mmi_b0.1/$spk/decode.log
-            done
-        done
-        ) &
-    done
-    wait;
-fi
+# # Decode SGMM+MMI.
+# if [ $stage -le 15 ]; then
+#     for spk in $speakers; do
+#         (
+#         for x in $tests; do
+#             for iter in 1 2 3 4; do
+#                 steps/decode_sgmm2_rescore.sh \
+#                     --cmd "$decode_cmd" --iter $iter \
+#                     --transform-dir exp/tri3/$spk/decode_$x \
+#                     data/$spk/lang_$x data/$spk/$x exp/sgmm/$spk/decode_$x \
+#                     exp/sgmm_mmi_b0.1/$spk/decode_${x}_it$iter >& exp/sgmm_mmi_b0.1/$spk/decode.log
+#             done
+#         done
+#         ) &
+#     done
+#     wait;
+# fi
