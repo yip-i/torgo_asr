@@ -1,4 +1,4 @@
-#!/bin/bash
+!/bin/bash
 
 # Copyright 2012  Vassil Panayotov
 #           2016  Cristina Espana-Bonet
@@ -34,7 +34,7 @@ gaussians=9000
 
 nj_decode=1
 
-. utils/parse_options.sh
+./parse_options.sh
 
 set -euo pipefail
 

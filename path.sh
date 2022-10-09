@@ -1,13 +1,13 @@
 # Location of your Kaldi installation
-export KALDI_ROOT=
+# export KALDI_ROOT=
 
 # Location of the Torgo corpus (.../torgo/data/)
-export CORPUS="content/downloads/Torgo"
+export CORPUS="/content/downloads/Torgo"
 
 # if [ -z $KALDI_ROOT ]; then
 #   echo "You need to set the KALDI_ROOT variable in path.sh to point to the location of your Kaldi installation."
 #   exit 1
-elif [ -z $CORPUS ]; then
+if [ -z $CORPUS ]; then
   echo "You need to set the CORPUS variable in path.sh to point to the location of the Torgo corpus."
   exit 1
 fi
