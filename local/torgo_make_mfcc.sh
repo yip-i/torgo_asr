@@ -73,7 +73,8 @@ for f in $required; do
     exit 1;
   fi
 done
-utils/validate_data_dir.sh --no-text --no-feats $data || exit 1;
+#Utils package
+./validate_data_dir.sh --no-text --no-feats $data || exit 1;
 
 if [ -f $data/spk2warp ]; then
   echo "$0 [info]: using VTLN warp factors from $data/spk2warp"
@@ -86,7 +87,10 @@ fi
 for n in $(seq $nj); do
   # the next command does nothing unless $mfccdir/storage/ exists, see
   # utils/create_data_link.pl for more info.
-  utils/create_data_link.pl $mfccdir/raw_mfcc_$name.$n.ark
+  #Utils package
+  # utils/create_data_link.pl $mfccdir/raw_mfcc_$name.$n.ark
+
+  ./create_data_link.pl $mfccdir/raw_mfcc_$name.$n.ark
 done
 
 
@@ -105,7 +109,8 @@ if [ -f $data/segments ]; then
     split_segments="$split_segments $logdir/segments.$n"
   done
  
-  utils/split_scp.pl $data/segments $split_segments || exit 1;
+ #Utils package
+  ./split_scp.pl $data/segments $split_segments || exit 1;
   rm $logdir/.error 2>/dev/null
 
   $cmd JOB=1:$nj $logdir/make_mfcc_${name}.JOB.log \

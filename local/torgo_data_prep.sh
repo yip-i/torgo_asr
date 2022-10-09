@@ -115,6 +115,6 @@ sort -u $data/utt2spk.unsorted > $data/utt2spk
 sort -u $data/spk2gender.unsorted > $data/spk2gender
 sort -u -o $bad_utts $bad_utts
 rm $data/*.unsorted
-utils/utt2spk_to_spk2utt.pl $data/utt2spk > $data/spk2utt
+./utt2spk_to_spk2utt.pl $data/utt2spk > $data/spk2utt
 
 local/corpus_statistics.sh

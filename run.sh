@@ -9,6 +9,7 @@
 . ./cmd.sh
 . ./path.sh
 
+#Critical portion of determining which part runs
 stage=0
 train=false
 
